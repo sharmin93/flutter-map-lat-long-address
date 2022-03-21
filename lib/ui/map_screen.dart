@@ -39,7 +39,9 @@ class _MapScreenState extends State<MapScreen> {
             child: GoogleMap(
               mapType: MapType.normal,
               initialCameraPosition: mapProvider.initCamera,
-              markers: Set<Marker>.of(mapProvider.markers),
+              markers: Set<Marker>.of(mapProvider.addMarker(
+                  locationProvider.location?.latitude,
+                  locationProvider.location?.longitude)),
               onMapCreated: (GoogleMapController controller) {
                 CameraUpdate? update = CameraUpdate.newCameraPosition(
                     locationProvider.newPosition!);
@@ -85,8 +87,8 @@ class _MapScreenState extends State<MapScreen> {
                   value: 10,
                 ),
                 UdText(
-                  text: mapProvider.updatedLocation?.longitude != null
-                      ? ' ${mapProvider.updatedLocation?.longitude}'
+                  text: locationProvider.lat != null
+                      ? ' ${locationProvider.lat}'
                       : '',
                 ),
               ],
