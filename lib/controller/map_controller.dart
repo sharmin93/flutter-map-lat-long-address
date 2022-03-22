@@ -40,8 +40,8 @@ class MapController extends ChangeNotifier {
     if (kDebugMode) {
       print('moveLatValue${value.target.latitude}');
       print('moveLongValue${value.target.longitude}');
-      print('moveProviderLat${mapLat}');
-      print('moveProviderLong${mapLong}');
+      print('moveProviderLat$mapLat');
+      print('moveProviderLong$mapLong');
     }
     notifyListeners();
   }

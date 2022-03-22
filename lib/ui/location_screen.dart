@@ -100,6 +100,7 @@ class LocationPage extends StatelessWidget {
                           context: context,
                           builder: (BuildContext context) {
                             return UdAlertWidget(
+                              title: 'Set Location Permission',
                               message:
                                   'PLease allow location permission from application setting to set location.',
                               button1Text: 'cancel',
