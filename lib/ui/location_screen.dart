@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_own_project/controller/map_controller.dart';
 import 'package:flutter_own_project/ui/map_screen.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:ud_widgets/ud_widgets.dart';
 
-import 'controller/location_controller.dart';
+import '../controller/location_controller.dart';
+import '../controller/map_controller.dart';
 
 class LocationPage extends StatelessWidget {
   const LocationPage({Key? key}) : super(key: key);
@@ -14,7 +14,7 @@ class LocationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationController>(context);
-    final mapProvider = Provider.of<MapController>(context);
+
     return Scaffold(
       body: Center(
         child: Padding(
@@ -34,8 +34,8 @@ class LocationPage extends StatelessWidget {
                       value: 10,
                     ),
                     UdText(
-                      text: mapProvider.updatedLocation?.latitude != null
-                          ? '${mapProvider.updatedLocation?.latitude}'
+                      text: context.watch<MapController>().mapLat != null
+                          ? ' ${context.watch<MapController>().mapLat}'
                           : '',
                     ),
                   ],
@@ -53,8 +53,8 @@ class LocationPage extends StatelessWidget {
                       value: 10,
                     ),
                     UdText(
-                      text: mapProvider.updatedLocation?.longitude != null
-                          ? '${mapProvider.updatedLocation?.longitude}'
+                      text: context.watch<MapController>().mapLong != null
+                          ? '${context.watch<MapController>().mapLong}'
                           : '',
                     ),
                   ],
@@ -71,15 +71,15 @@ class LocationPage extends StatelessWidget {
                       value: 10,
                     ),
                     UdText(
-                      text: mapProvider.address != null
-                          ? '${mapProvider.address}'
+                      text: context.watch<MapController>().mapAddress != null
+                          ? '${context.watch<MapController>().mapAddress}'
                           : '',
                     ),
                   ],
                 ),
               ),
               UdGapY(
-                value: 10,
+                value: 20,
               ),
               UdBasicButton(
                 title: 'Set location',
@@ -95,6 +95,26 @@ class LocationPage extends StatelessWidget {
                           ),
                         );
                       }
+                      if (value == LocationPermission.deniedForever) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return UdAlertWidget(
+                              message:
+                                  'PLease allow location permission from application setting to set location.',
+                              button1Text: 'cancel',
+                              button1Function: () {
+                                Navigator.pop(context);
+                              },
+                              button2Text: 'ok',
+                              button2Function: () {
+                                locationProvider.openSet();
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        );
+                      }
                     },
                   );
                 },
@@ -102,14 +122,17 @@ class LocationPage extends StatelessWidget {
               UdGapY(
                 value: 10,
               ),
-              mapProvider.updatedLocation != null
+
+              context.watch<MapController>().mapLat != null &&
+                      context.watch<MapController>().mapLong != null &&
+                      context.watch<MapController>().mapAddress != null
                   ? UdBasicButton(
                       title: 'Clear data',
                       onTap: () {
-                        mapProvider.updatedLocation;
+                        context.read<MapController>().clearData();
                       },
                     )
-                  : SizedBox(),
+                  : const SizedBox(),
             ],
           ),
         ),

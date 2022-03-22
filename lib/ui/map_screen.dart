@@ -19,121 +19,272 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final Completer<GoogleMapController> _controller = Completer();
-  LatLng? location;
+  GoogleMapController? controller;
   @override
   Widget build(BuildContext context) {
-    final locationProvider = Provider.of<LocationController>(context);
-    final mapProvider = Provider.of<MapController>(context);
+    LocationController locationProvider =
+        Provider.of<LocationController>(context, listen: true);
+    MapController mapProvider = Provider.of<MapController>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: UdText(
-          text: 'Map',
+        appBar: AppBar(
+          title: UdText(
+            text: 'Map',
+          ),
         ),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: UdDesign.pt(400),
-            child: GoogleMap(
-              mapType: MapType.normal,
-              initialCameraPosition: mapProvider.initCamera,
-              markers: Set<Marker>.of(mapProvider.addMarker(
-                  locationProvider.location?.latitude,
-                  locationProvider.location?.longitude)),
-              onMapCreated: (GoogleMapController controller) {
-                CameraUpdate? update = CameraUpdate.newCameraPosition(
-                    locationProvider.newPosition!);
-                controller.moveCamera(update);
-                _controller.complete(controller);
-              },
+        body: Column(
+          children: [
+            SizedBox(
+              height: UdDesign.pt(400),
+              child: Stack(
+                children: [
+                  GoogleMap(
+                      zoomControlsEnabled: false,
+                      mapType: MapType.normal,
+                      initialCameraPosition: mapProvider.initCamera,
+                      onMapCreated: (GoogleMapController controller) {
+                        CameraUpdate? update = CameraUpdate.newCameraPosition(
+                            locationProvider.newPosition!);
+                        controller.moveCamera(update);
+                        _controller.complete(controller);
+                      },
+                      onCameraMove: (value) {
+                        mapProvider.onMove(value);
+                      }),
+                  const Center(
+                    child: Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-          UdGapY(
-            value: 8,
-          ),
-          //Latitude
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                UdText(
-                  text: 'Latitude:',
-                ),
-                UdGapX(
-                  value: 10,
-                ),
-                UdText(
-                  text: mapProvider.updatedLocation?.latitude != null
-                      ? ' ${mapProvider.updatedLocation?.latitude}'
-                      : '',
-                ),
-              ],
+            UdGapY(
+              value: 10,
             ),
-          ),
-          UdGapY(
-            value: 8,
-          ),
-          //longitude
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                UdText(
-                  text: 'Longitude:',
-                ),
-                UdGapX(
-                  value: 10,
-                ),
-                UdText(
-                  text: locationProvider.lat != null
-                      ? ' ${locationProvider.lat}'
-                      : '',
-                ),
-              ],
+            //Latitude
+            Padding(
+              padding:
+                  EdgeInsets.only(top: UdDesign.pt(10), left: UdDesign.pt(10)),
+              child: Row(
+                children: [
+                  UdText(
+                    text: 'Latitude:',
+                  ),
+                  UdGapX(
+                    value: 10,
+                  ),
+                  UdText(
+                    text: context.watch<MapController>().mapLat != null
+                        ? ' ${context.watch<MapController>().mapLat}'
+                        : '',
+                  ),
+                ],
+              ),
             ),
-          ),
-          UdGapY(
-            value: 8,
-          ),
-          //address
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                UdText(
-                  text: 'Address:',
-                ),
-                UdGapX(
-                  value: 10,
-                ),
-                UdText(
-                  maxLines: 2,
-                  text: mapProvider.address != null
-                      ? '${mapProvider.address}'
-                      : '',
-                ),
-              ],
+            UdGapY(
+              value: 8,
             ),
-          ),
-          UdGapY(
-            value: 14,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: UdBasicButton(
-              width: UdDesign.pt(150),
-              backgroundColor: Colors.blue,
-              titleColor: Colors.white,
-              title: 'Custom Address',
-              onTap: () {
-                Navigator.pop(context);
-              },
+            //longitude
+            Padding(
+              padding: EdgeInsets.only(
+                top: UdDesign.pt(10),
+                left: UdDesign.pt(10),
+              ),
+              child: Row(
+                children: [
+                  UdText(
+                    text: 'Longitude:',
+                  ),
+                  UdGapX(
+                    value: 10,
+                  ),
+                  UdText(
+                    text: mapProvider.mapLong != null
+                        ? ' ${mapProvider.mapLong}'
+                        : '',
+                  ),
+                ],
+              ),
             ),
-          )
-        ],
-      ),
-    );
+            UdGapY(
+              value: 8,
+            ),
+            //address
+            Padding(
+              padding: EdgeInsets.only(
+                top: UdDesign.pt(10),
+                left: UdDesign.pt(10),
+              ),
+              child: Row(
+                children: [
+                  UdText(
+                    text: 'Address:',
+                  ),
+                  UdGapX(
+                    value: 10,
+                  ),
+                  UdText(
+                    maxLines: 2,
+                    text: mapProvider.mapAddress != null
+                        ? '${mapProvider.mapAddress}'
+                        : '',
+                  ),
+                ],
+              ),
+            ),
+            UdGapY(
+              value: 14,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: UdBasicButton(
+                width: UdDesign.pt(150),
+                backgroundColor: Colors.blue,
+                titleColor: Colors.white,
+                title: 'Custom Address',
+                onTap: () {
+                  context.read<MapController>().updateLocation().then((value) {
+                    if (value == true) {
+                      Navigator.pop(context);
+                    }
+                  });
+                },
+              ),
+            )
+          ],
+        )
+        // Consumer<LocationController>(
+        //   builder: (context, provider, __) {
+        //     return
+        //       Column(
+        //       children: [
+        //         SizedBox(
+        //           height: UdDesign.pt(400),
+        //           child: Stack(
+        //             children: [
+        //               GoogleMap(
+        //                   zoomControlsEnabled: false,
+        //                   mapType: MapType.normal,
+        //                   initialCameraPosition: mapProvider.initCamera,
+        //                   onMapCreated: (GoogleMapController controller) {
+        //                     CameraUpdate? update = CameraUpdate.newCameraPosition(
+        //                         locationProvider.newPosition!);
+        //                     controller.moveCamera(update);
+        //                     _controller.complete(controller);
+        //                   },
+        //                   onCameraMove: (value) {
+        //                     mapProvider.onMove(value);
+        //                   }),
+        //               const Center(
+        //                 child: Icon(
+        //                   Icons.location_on,
+        //                   color: Colors.red,
+        //                   size: 40,
+        //                 ),
+        //               )
+        //             ],
+        //           ),
+        //         ),
+        //         UdGapY(
+        //           value: 10,
+        //         ),
+        //         //Latitude
+        //         Padding(
+        //           padding: EdgeInsets.only(
+        //               top: UdDesign.pt(10), left: UdDesign.pt(10)),
+        //           child: Row(
+        //             children: [
+        //               UdText(
+        //                 text: 'Latitude:',
+        //               ),
+        //               UdGapX(
+        //                 value: 10,
+        //               ),
+        //               UdText(
+        //                 text: context.watch<MapController>().mapLat != null
+        //                     ? ' ${context.watch<MapController>().mapLat}'
+        //                     : '',
+        //               ),
+        //             ],
+        //           ),
+        //         ),
+        //         // UdGapY(
+        //         //   value: 8,
+        //         // ),
+        //         // //longitude
+        //         // Padding(
+        //         //   padding: EdgeInsets.only(
+        //         //     top: UdDesign.pt(10),
+        //         //     left: UdDesign.pt(10),
+        //         //   ),
+        //         //   child: Row(
+        //         //     children: [
+        //         //       UdText(
+        //         //         text: 'Longitude:',
+        //         //       ),
+        //         //       UdGapX(
+        //         //         value: 10,
+        //         //       ),
+        //         //       UdText(
+        //         //         text: mapProvider.mapLong != null
+        //         //             ? ' ${mapProvider.mapLong}'
+        //         //             : '',
+        //         //       ),
+        //         //     ],
+        //         //   ),
+        //         // ),
+        //         // UdGapY(
+        //         //   value: 8,
+        //         // ),
+        //         // //address
+        //         // Padding(
+        //         //   padding: EdgeInsets.only(
+        //         //     top: UdDesign.pt(10),
+        //         //     left: UdDesign.pt(10),
+        //         //   ),
+        //         //   child: Row(
+        //         //     children: [
+        //         //       UdText(
+        //         //         text: 'Address:',
+        //         //       ),
+        //         //       UdGapX(
+        //         //         value: 10,
+        //         //       ),
+        //         //       UdText(
+        //         //         maxLines: 2,
+        //         //         text: mapProvider.mapAddress != null
+        //         //             ? '${mapProvider.mapAddress}'
+        //         //             : '',
+        //         //       ),
+        //         //     ],
+        //         //   ),
+        //         // ),
+        //         // UdGapY(
+        //         //   value: 14,
+        //         // ),
+        //         // Padding(
+        //         //   padding: const EdgeInsets.all(20.0),
+        //         //   child: UdBasicButton(
+        //         //     width: UdDesign.pt(150),
+        //         //     backgroundColor: Colors.blue,
+        //         //     titleColor: Colors.white,
+        //         //     title: 'Custom Address',
+        //         //     onTap: () {
+        //         //       mapProvider.updateLocation().then((value) {
+        //         //         if (value == true) {
+        //         //           Navigator.pop(context);
+        //         //         }
+        //         //       });
+        //         //     },
+        //         //   ),
+        //         // )
+        //       ],
+        //     );
+        //   },
+        // ),
+        );
   }
 }

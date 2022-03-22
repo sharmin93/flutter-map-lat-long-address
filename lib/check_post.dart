@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ud_design/ud_design.dart';
 
-import 'location_page.dart';
+import 'ui/location_screen.dart';
 
 class CheckPost extends StatefulWidget {
   const CheckPost({Key? key, required this.title}) : super(key: key);

@@ -35,7 +35,6 @@ class LocationController extends ChangeNotifier {
         long = location?.longitude;
         newPosition = CameraPosition(target: LatLng(lat!, long!), zoom: 16);
         update = CameraUpdate.newCameraPosition(newPosition!);
-        // _mapController.moveCamera(update);
         List<Placemark> placeMarks =
             await placemarkFromCoordinates(lat!, long!);
         address = placeMarks.first.name;
@@ -47,14 +46,16 @@ class LocationController extends ChangeNotifier {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.deniedForever) {
-      if (Platform.isIOS) {
-        Geolocator.openAppSettings();
-      } else {
-        Geolocator.openLocationSettings();
-      }
-    }
+    if (permission == LocationPermission.deniedForever) {}
     notifyListeners();
     return permission;
+  }
+
+  openSet() {
+    if (Platform.isIOS) {
+      Geolocator.openAppSettings();
+    } else {
+      Geolocator.openLocationSettings();
+    }
   }
 }
