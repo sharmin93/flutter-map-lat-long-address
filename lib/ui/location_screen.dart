@@ -106,7 +106,10 @@ class _LocationPageState extends State<LocationPage> {
                                   builder: (_) => const MapScreen(),
                                 ),
                               )
-                            : const SizedBox();
+                            : UdText(
+                                text:
+                                    'Something went wrong, please check your internet.',
+                              );
                       }
                       if (value == LocationPermission.deniedForever) {
                         showDialog(
