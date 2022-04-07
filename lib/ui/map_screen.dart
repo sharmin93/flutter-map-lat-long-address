@@ -22,10 +22,6 @@ class _MapScreenState extends State<MapScreen> {
   GoogleMapController? controller;
   @override
   Widget build(BuildContext context) {
-    LocationController locationProvider =
-        Provider.of<LocationController>(context, listen: true);
-    MapController mapProvider = Provider.of<MapController>(context);
-
     return Scaffold(
         appBar: AppBar(
           title: UdText(
@@ -41,15 +37,16 @@ class _MapScreenState extends State<MapScreen> {
                   GoogleMap(
                       zoomControlsEnabled: false,
                       mapType: MapType.normal,
-                      initialCameraPosition: mapProvider.initCamera,
+                      initialCameraPosition:
+                          context.watch<MapController>().initCamera,
                       onMapCreated: (GoogleMapController controller) {
                         CameraUpdate? update = CameraUpdate.newCameraPosition(
-                            locationProvider.newPosition!);
+                            context.watch<LocationController>().newPosition!);
                         controller.moveCamera(update);
                         _controller.complete(controller);
                       },
                       onCameraMove: (value) {
-                        mapProvider.onMove(value);
+                        context.read<MapController>().onMove(value);
                       }),
                   const Center(
                     child: Icon(
@@ -102,8 +99,8 @@ class _MapScreenState extends State<MapScreen> {
                     value: 10,
                   ),
                   UdText(
-                    text: mapProvider.mapLong != null
-                        ? ' ${mapProvider.mapLong}'
+                    text: context.watch<MapController>().mapLong != null
+                        ? ' ${context.watch<MapController>().mapLong}'
                         : '',
                   ),
                 ],
@@ -128,8 +125,8 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   UdText(
                     maxLines: 2,
-                    text: mapProvider.mapAddress != null
-                        ? '${mapProvider.mapAddress}'
+                    text: context.watch<MapController>().mapAddress != null
+                        ? '${context.watch<MapController>().mapAddress}'
                         : '',
                   ),
                 ],

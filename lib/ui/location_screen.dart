@@ -8,13 +8,21 @@ import 'package:ud_widgets/ud_widgets.dart';
 import '../controller/location_controller.dart';
 import '../controller/map_controller.dart';
 
-class LocationPage extends StatelessWidget {
+class LocationPage extends StatefulWidget {
   const LocationPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final locationProvider = Provider.of<LocationController>(context);
+  State<LocationPage> createState() => _LocationPageState();
+}
 
+class _LocationPageState extends State<LocationPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Padding(
@@ -84,16 +92,21 @@ class LocationPage extends StatelessWidget {
               UdBasicButton(
                 title: 'Set location',
                 onTap: () {
-                  locationProvider.checkPosition().then(
+                  context
+                      .read<LocationController>()
+                      .checkLocationPermission()
+                      .then(
                     (value) {
                       if (value == LocationPermission.whileInUse ||
                           value == LocationPermission.always) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MapScreen(),
-                          ),
-                        );
+                        context.read<LocationController>().location != null
+                            ? Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MapScreen(),
+                                ),
+                              )
+                            : const SizedBox();
                       }
                       if (value == LocationPermission.deniedForever) {
                         showDialog(
@@ -109,7 +122,7 @@ class LocationPage extends StatelessWidget {
                               },
                               button2Text: 'ok',
                               button2Function: () {
-                                locationProvider.openSet();
+                                context.read<LocationController>().openSet();
                                 Navigator.pop(context);
                               },
                             );
